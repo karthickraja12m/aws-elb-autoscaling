@@ -1,0 +1,859 @@
+Network Engineering: - ELB AND ASG - IaaS 
+------------------------------------------
+1. ELB - Elastic Load Balancer
+2. Autoscalling - Vertical Scaling - Automated - Cloud Premises
+-> Traditional Scaling Methodology: Horizontal Scaling - Manual (on-premises)
+
+Bulk of Request - Traffics - VM - Then we need many vms - 
+if(cpu utilization <=50%) 
+
+100000  =  vm - 10000 = 10 vms - Same Applications
+
+ELB Definition - Distributes the traffics to "available resources".
+                 Enables parallel processing
+                 Assures fastest system performance
+                 "Customer Satisfaction" and "No Downtime"
+                 "Customer request - Response fast"
+
+
+Real_Time Scenario:
+-------------------
+Types of ELB
+Autoscalling
+CloudWatch
+
+
+Practicle:
+----------
+Classic Load balancer creation & enable the Autoscalling: http, https and tcp 
+-----------------------------------------------------------------------------
+1. classic lb creation - input 1  - Health Check
+2. launch Configuration - base instance creation  - input 2 Customized (real-time); pre-defined
+   Pre-defined / Customized AMI
+3. Autoscalling creating & configuration (clb, launch confi)-Configuration and condition
+
+#! /bin/bash
+yum install httpd -y
+service httpd start
+echo "This is my Classic Load Balancer Application" > /var/www/html/index.html
+
+
+AMI - Customized and pre-defined
+
+ubuntu - apt
+
+Intranet       Internet
+local          global
+
+
+Configuration:-
+---------------
+Desired : 2   
+Min     : 1  2/2 checks passed
+Max     : 4
+
+
+
+Condition:-
+-----------
+Scale-up:
+If (Cpu utilization >=50% in vm1 and vm2) then
+create vm3
+if (Cpu utilization >=50% in vm1 and vm2 and vm3) then
+create vm4
+
+scale-down:
+if (Cpu utilization <=50% in vm1 and vm2 and vm3) then
+remove vm4
+
+if (Cpu utilization <=50% in vm1 and vm2 ) then
+remove vm3
+
+This is not possible:
+if (Cpu utilization <=50% in vm1 ) then
+remove vm2
+
+
+
+InService-     Application is running through ELB
+OutOfService - App is not running through ELB
+
+
+
+Case Study: Fake way to increase the CPU Utilization:
+------------------------------------------------------
+Stress Command to increase the CPU Utilization .... for commands refer below link
+https://intellipaat.com/community/32750/stress-command-and-auto-scalling
+Nature of the command: it means 8 members same time access the serrver....
+
+yum install stress -y
+sudo stress --cpu  8 --timeout 20
+vm1 and vm2 - 
+
+default package for linux : yum
+
+EPEL - Stress bin/bash - Linux environment --- Extra package for ent linux.
+stress ins
+cpu --8 
+
+
+Delete the instances:
+---------------------
+Demolish:
+asg 
+lc   
+lb   
+
+
+
+Application Load balancer: Path based routing ; http and https
+--------------------------------------------------------------
+1. Two EC2 instances (facebook and instagram)
+2. Target group - Two target groups
+3. Application LB create
+
+facebook:
+#! /bin/bash
+yum install httpd -y
+service httpd start
+mkdir /var/www/html/facebook
+echo "This is my facebook Application" > /var/www/html/facebook/index.html 	
+
+
+instagram:
+#! /bin/bash
+yum install httpd -y
+service httpd start
+mkdir /var/www/html/instagram
+echo "This is my instagram Application" > /var/www/html/instagram/index.html
+
+
+Demolish:
+---------
+EC2
+APP LB
+TARGET GROUP
+
+ELB and ASG Review:
+-------------------
+1. ELB - Distribute traffics available resources
+2. Types - app, n/w, classic, gateway
+3. App lb: http, https, path, 1elb to many microservices, 95%, Application layer
+4. nw lb: port, 1 to many, 5%, transport, tcp,tls,udp
+   elb dns:8080
+5. classic lb: 1 to 1, monolythic, 5% legacy, http, https, tcp, trans and app
+6. Inputs of asg
+   elb
+   base instance{real-time Customized}
+   directly we can attach the ec2 with elb
+7. classic load balancer
+
+   http    {classic load balancer running}
+   80
+   index.html  {Application running in instance}
+
+   5    - response time
+   30   - Interval
+   2    - Unhealtthy status - 2 cons failures
+   10   - 10 consecutive success
+
+---> depends on Application nature
+
+
+8. through stress we can increase cpu utilization
+   stress package will be avilable in "yum" ---{default package for linux} = No,
+   EPEL - Extra package for enterprise linux
+
+9. Inservice     - App running under elb
+   outofservice  - App not running under elb  
+
+
+10. Target Group - Path based routing
+    target group always set one microservice from there others can be linked and loaded
+
+11. Listener 
+    /facebook*  - fb (target group) --- calling facebook application    
+    /instagram*  - inst (target group) --- calling instagram application
+
+12. is httpd an daemon process?  - deep drive this
+    --> It runs in kernel
+    --> No end user interaction
+    --> Apache is an daemon process
+    --> service httpd start
+    --> dead mode
+
+Note  --> JENKINS - one of the daemon process /etc/init.d/jenkins
+
+
+13. OSI Layer 
+    -> 7 layers
+    -> net communication over web
+    -> telecommunication
+    -> Computer systems connect over net
+
+14. instances got deleted in ec2 dashboard?
+    
+    Configurations: desired, min, max      
+    Conditions: ....vms {scale-up and scale-down}
+
+15. what is the port number?
+    http = 80
+    https = 443
+    ssh = 22
+    RDP = 3389
+    
+    port number 0 to 65536     
+
+
+why is numerical values required? comp can recog only nu values
+
+
+task:
+window clb
+asg - alb
+
+REVIEW:
+-------
+1. ELB - Distribute traffics available resources
+2. Types - app, n/w, classic, gateway
+3. App lb: http, https, path, 1elb to many microservices, 95%, Application layer
+4. nw lb: port, 1 to many, 5%, transport, tcp,tls,udp
+   elb dns:8080
+5. classic lb: 1 to 1, monolythic, 5% legacy, http, https, tcp, trans and app
+6. Inputs of asg
+   elb
+   base instance{real-time Customized}
+   directly we can attach the ec2 with elb
+7. classic load balancer
+
+   http    {classic load balancer running}
+   80
+   index.html  {Application running in instance}
+
+   5    - response time
+   30   - Interval
+   2    - Unhealtthy status - 2 cons failures
+   10   - 10 consecutive success
+
+---> depends on Application nature
+
+
+8. through stress we can increase cpu utilization
+   stress package will be avilable in "yum" ---{default package for linux} = No,
+   EPEL - Extra package for enterprise linux
+
+9. Inservice     - App running under elb
+   outofservice  - App not running under elb  
+
+
+10. Target Group - Path based routing
+    target group always set one microservice from there others can be linked and loaded
+
+11. Listener 
+    /facebook*  - fb (target group) --- calling facebook application    
+    /instagram*  - inst (target group) --- calling instagram application
+
+12. is httpd an daemon process?  - deep drive this
+    --> It runs in kernel
+    --> No end user interaction
+    --> Apache is an daemon process
+    --> service httpd start
+    --> dead mode
+
+Note  --> JENKINS - one of the daemon process /etc/init.d/jenkins
+
+
+13. OSI Layer 
+    -> 7 layers
+    -> net communication over web
+    -> telecommunication
+    -> Computer systems connect over net
+
+14. instances got deleted in ec2 dashboard?
+    
+    Configurations: desired, min, max      
+    Conditions: ....vms {scale-up and scale-down}
+
+15. what is the port number?
+    http = 80
+    https = 443
+    ssh = 22
+    RDP = 3389
+    
+    port number 0 to 65536     
+
+
+why is numerical values required? comp can recog only nu values
+
+
+task:
+window clb
+asg - alb
+
+
+reviews:
+--------
+1. ELB - Elastic Load balancer; Distributes traffics to available resources
+         Parallel processing ...assures fast performance
+
+2. Types - App, nw, classic, gateway
+
+3. App lb: path based; http,https; Application layer; 1elb to many mcs; Microservices;95%   
+
+4. nw lb: tcp,udp,tls; transport, port, 1elb to many mcs; 5% ... 
+   elb dns:8080
+
+5. classic lb:tcp,https,http, trans+appl, 1elb to 1 app, Legacy app, 5% 
+
+6. ASG - Scale-up and scale-down; "vertical Scaling" -  Automatic 
+   Inputs of asg : elb + base instance {best practice - Customized AMI input}
+
+   Configuration:
+   Desired - Definite
+   Minimum - Start-with
+   Maximum - Application nature / app size / ==== forecasting value of the app...
+  
+   Condition:
+   CPU UNTILIZATION >=50% 
+   Create vms
+   CPU UNTILIZATION <=50% 
+
+   
+7. classic load balancer; configure health check; tcp,http,https 
+
+   https        -   {classic lb running port}  
+   443          - 
+   index.html   -   application
+
+   5    - response time
+   30   - intervel
+   2    - consecutive 2 failures marked "unhealthy threshold" 
+   10   - Consecutove 10 success marked "Healthy threshold"
+
+---> "Application behaviour / nature / size / criticality / business (domain) - we can have
+      our configure health check
+
+
+8. through stress we can increase cpu utilization
+   stress package will be avilable in "yum" ---{default package for linux} = No,
+   EPEL - Extra package for enterprise linux
+
+9. Inservice     - "Application running via ELB"
+   outofservice  - "Application IS NOT running via ELB"
+
+
+10. Target Group - "path based routing" 
+    target group always set to one single microservice
+
+11. Listener 
+    path based routing - target group - Instance (application load)
+
+
+12. is httpd an daemon process?  - deep drive this : 
+    runs in kernel (o.s)
+    dead mode
+    No End user interactions
+  
+    JENKINS - Daemon process .... /etc/init.d/jenkins
+
+13. OSI Layer 
+    Open source interconnection model
+    7 layes
+    protocols
+    telecommunication
+    Computer systems connection over net
+
+14. instances got deleted in ec2 dashboard?
+    Auto creation: first min, second desired , if(cpu utli>=50%) then 
+    2
+    1
+    4
+    
+15. Stopped Instance - it will mark as a unhealthy threshold...2 conse failures --
+    --new vm will create through ASG -- scale-up and scale-down 
+
+16. what is the port number?
+    -http - 80
+     https - 443
+     ssh - 22
+     RDP - 3389
+     
+     0 to 65535
+
+--> Computer system recog only numerical values 
+
+
+why is numerical values required? comp can recog only nu values
+
+
+task:
+window clb
+asg - alb
+
+
+
+
+Reviews:
+---------
+1. ELB - Elastic Load Balancer, Distri traffics "Avialble resources" 
+         parallel processing
+         Fastest system performacnce
+         network engineering
+
+2. Types - App, nw, classic, gateway
+
+3. App lb: path;http,https; microserrvics;application layer; 1elb to Many Microservices;95% - User friendly    
+
+4. nw lb: port;tcp,tls,udp; transport; 1 to many misc; 5%; Microservices; private app
+   elb dns:8080
+
+5. classic lb: http,tcp,https; trans and app layer; monolythic; 1elb to 1application; general; 5% - Legacy app 
+
+6. Inputs of asg: elb and Base instance (Real-time - "Customized AMI")
+   
+7. classic load balancer: Configure health Check : http, https, tcp
+
+   http         -  protocol for clb, lb is running with this port number  -  
+   80           -
+   index.html   - Application - webpage
+
+   5    - Response time
+   30   - Intervel
+   2    - Consecutive two failures marked as "Unhealthy Threshold"
+   10   - Consecutive ten success marked as "healthy Threshold"
+
+---> nature, business, data, region, country, transaction etc  ....
+
+
+8. through stress we can increase cpu utilization
+   stress package will be avilable in "yum" ---{default package for linux} = No,
+   EPEL - Extra package for enterprise linux
+
+9. Inservice     - Application is running via ELB     ===>> elb and asg and instance sync
+   outofservice  - Application is not running via ELB
+
+
+10. App lb: Target Group - 
+           target group always set to ony single microservice.....linking others ms loaded
+
+11. Listener 
+    /facebook* - path  ==> forward to target group "fb" ===> it will hit server and fetch facebook app
+    /facebook* - path  ==> forward to target group "fb" ===> it will hit server and fetch facebook app
+    /facebook* - path  ==> forward to target group "fb" ===> it will hit server and fetch facebook app
+    /facebook* - path  ==> forward to target group "fb" ===> it will hit server and fetch facebook app
+
+
+12. is httpd an daemon process?  - deep drive this
+    -> Webserver middleware - apache - 
+    -> http - 80    - normal process
+    -> httpd - 80   - daemon process - kernel, no direct inter with end user; dead; start  
+
+-===>>> JENKINS - etc/init.d/jenkins  
+         service jenkins restart
+                
+                    or
+
+         service jenkins stop         
+         service jenkins start
+
+
+13. OSI Layer 
+    open source interconnection model 
+    7 layers
+    protocols 
+    telecomm
+    computer - systems interconnection over internet - communicaion from one app to another app transmisson
+
+14. instances got deleted in ec2 dashboard?
+    if (two instances stopped) then
+    Initially minimum capacity created then desired capacity will be created  
+
+    index.html
+    deleted index.html 
+    "page cannot be dispalyed"
+    
+
+15. what is the port number?
+    http = 80
+    https = 443
+    ssh = 22
+    rdp = 3
+    
+0 to 65535
+why is numerical values required? comp can recog only nu values
+
+
+16. Autoscalling Configuration:
+    Desired capacity  : 2 
+    Minimum capacity  : 1
+    maximum capacity  : 4
+     
+    Autoscalling Condition:
+    metric: CPU Utilization
+    condition: if(cpu utli>=50%) then
+               scale-up
+                     
+    if(cpu utli<=50%) then
+               scale-down
+               
+==> Automatic "Vertical Scaling"
+
+
+
+task:
+Monolythic vs Microservices
+workout classic lb in Windows
+
+
+Reviews:
+---------
+1. ELB - Elastic load balancer
+   Distributes traffics
+         
+ 
+        
+
+2. Types - app, nw, classic, gateway
+
+3. App lb:http, https, path, Microservices 
+
+4. nw lb: tcp, udp,tls, port, Microservices
+
+5. classic lb: http, https, tcp, general, Monolythic
+
+6. Inputs of asg: elb and Customized AMI
+   
+7. classic load balancer: Configure health Check : http, https, tcp
+
+   http         -  Classic lb
+   80           -
+   index.html   -  application home 
+
+   5    -  Response time
+   30   -  INterval
+   2    -  unhealthy threshold - 2 con failures
+   10   -  Healthy 
+
+---> nature, business, data, region, country, transaction etc  ....
+
+
+8. through stress we can increase cpu utilization
+   stress package will not be avilable in "yum" ---{default package for linux} = No,
+   EPEL - Extra package for enterprise linux
+
+9. Inservice     - App is running through ELB
+   outofservice  - App is not running through ELB
+
+
+10. App lb: Target Group - 
+           target group always set to ony single microservice.....linking others ms loaded
+
+11. Listener 
+    /facebook* - path  ==> forward to target group "fb" ===> it will hit server and fetch facebook app
+
+
+12. is httpd an daemon process?  - deep drive this
+    -> Webserver middleware - apache - 
+    -> http - 80    - normal process
+    -> httpd - 80   - daemon process - kernel, no direct inter with end user; dead; start  
+
+-===>>> JENKINS - etc/init.d/jenkins  
+         service jenkins restart
+                
+                    or
+
+         service jenkins stop         
+         service jenkins start
+
+
+13. OSI Layer; 7, tele, IT 
+    
+14. instances got deleted in ec2 dashboard?
+    if (two instances stopped) then
+    Initially minimum capacity created then desired capacity will be created  
+
+    index.html
+    deleted index.html 
+   "page cannot be dispalyed"
+    
+
+15. what is the port number?
+HTTP - 80 
+HTTPS - 443
+SSH - 22
+RDP - 3389
+
+
+why is numerical NUMBERS required? comp can recog only nu values
+
+
+17. Autoscalling Configuration:
+    Desired capacity
+    Minimum capacity
+    Maximum Capacity 
+
+Autoscalling Condition:
+    Metric : CPU UTILIZATION
+    50%
+
+
+task:
+window clb
+asg - alb
+
+
+
+Reviews:
+---------
+1. ELB - ELASTIC LOAD BALANCER
+   Distributes traffics to available resources       
+ 
+       
+
+2. Types - classic, application, network, Gateway
+
+3. App lb: Path, http & https, Microservices, Application layer, 95%, 1 ELB DNS to MANY MSs
+
+4. nw lb: Port, tcp,udp tls, Microservices, Transport, 1 ELB DNS to Many MSs, 5% - Within org
+
+5. classic lb: http & https & tcp, Monolythic, general, trans and App layers, 1 ELB DNS to 1 Application 
+
+6. Inputs of asg: Load balancer, AMI (Customized AMI)
+   
+7. classic load balancer: Configure health Check : http https tcp
+
+   http         -  where the CLB is running 
+   80           -
+   index.html   -  Application running inside the virtual machine   
+
+   5    -  Response time
+   30   -  Interval
+   2    -  2 to 7 - Unhealthy Threshold
+   10   -  1 TO 10 - Healthy threshold
+
+---> nature, business, data, region, country, transaction etc  ....
+
+
+8. through stress we can increase cpu utilization
+   stress package will not be avilable in "yum" ---{default package for linux} = No,
+   EPEL - Extra package for enterprise linux
+
+9. Inservice     - Application is running VIA ELB
+   outofservice  - Application is not running VIA ELB
+
+
+10. App lb: Target Group - 
+           target group always set to ony single microservice.....linking others ms loaded
+
+25 MSs - 25 Target groups
+
+11. Listener 
+    /facebook* - path  ==> forward to target group "fb" ===> it will hit server and fetch facebook app
+
+25 mss - 25 rules
+path - target group - intance - application 
+
+
+12. is httpd an daemon process?  - deep drive this
+    -> Webserver middleware - apache - 
+    -> http - 80    - normal process
+    -> httpd - 80   - daemon process - kernel, no direct inter with end user; dead; start  
+
+-===>>> JENKINS - etc/init.d/jenkins  
+         service jenkins restart
+                
+                    or
+
+         service jenkins stop         
+         service jenkins start
+
+
+13. OSI Layer; 7, tele, IT, Protocols 
+    
+14. instances got deleted in ec2 dashboard?
+    if (two instances stopped) then
+    Initially minimum capacity created then desired capacity will be created  
+
+    index.html
+    deleted index.html 
+   "page cannot be dispalyed"
+    
+
+15. what is the port number?
+HTTP - 80 
+HTTPS - 443
+SSH - 22
+RDP - 3389
+
+
+why is numerical NUMBERS required? comp can recog only nu values
+
+
+17. Autoscalling Configuration:
+Desired capacity - always it runs - aws - definite
+Minimum capacity - when all vms become unhealthy, atleast min cap will be implemented
+Maximum capacity - Life time configuration - 11 members group
+
+ 
+
+Autoscalling Condition:
+Metric = CPU UTIL
+Condition : >=50% scale-up
+<=50% = scale-down
+
+
+
+task:
+window clb
+asg - alb
+
+
+
+16-December-2021:
+Network Engineering : IaaS : ELASTIC LOAD BALANCER AND AUTOSCALLING GROUP:
+--------------------------------------------------------------------------
+1. ELB - Health Check && Distribution
+2. ASG - Scale-Down && Scale-Up
+3. Why it ELB && ASG??? - Interface, Parallel Processing and quick response to end users
+4. ELB and ASG Hierarchy? Collecting traffics - Health check elb to app - Scale-up && Scale-down
+                          - Distribution - Generating Response in App - Send res to users
+5. Types: Classic(App,Trans), Application(OSI-APP), Network(OSI-TRANS), gateway(OSI-NET)
+6. 95% - APP, 5% LEGACY - CLASSIC, 5% PRIVATE APP - NETWORK
+7. Practical 1: classic load balancer
+   a) CLB - health check
+   b) EC2 - Launch Configuration / Launch Template - EC2 ADVANCE -{PRE-DEFINED, CUSTOMIZED AMI}
+      bootstrap - launch + installation - simultaneous
+   c) ASG - ec2 + clb 
+   d) TESTING
+8. Health Check Parameters: CLB(http:80) - 30secs(Interval) - Home page of App - 
+                            Response time = 5 secs
+                            Unhealthy Threshold = 2 consecutive failures
+                            Healthy Threshold = 10 Consecutive success
+9. EC2 - CONF / TEMP
+10. ASG - EC2 + CLB
+    Confirguration:
+    Desired Capacity = Constant vms
+    Minimum Capacity = If(anything happens to Desired capacity) then Minimum conf can be implemented
+    maximum Capacity = Depends on the Application load+criticality+domain+user base+transaction etc
+
+    Condition:
+    Metric: CPU Utilization
+    Target: 50%
+
+    Scale-up:
+    if(cpu>=50% in vm1 and vm2) then
+    create vm3 
+    if(cpu>=50% in vm1 and vm2 and vm3) then
+    create vm4
+
+    if(cpu>=50% in vm1 and vm2 and vm3 and vm4) then
+    create vm5 - post amendment
+
+    Scale-down:
+    if(cpu<50% in vm1 vm2 vm3) then
+    remove vm4
+    remove vm3
+    if(cpu<50% in vm1) then
+    remove vm2
+
+
+11. Practcal 2: APPLICATION LOAD BALANCER
+    a) 2 Microservices launch and deploy 
+    b) 2 Target groups for facebook and instagram microservices
+    c) Application Load balancer creation + Listener
+
+12. App lb target how many ms initially? only one always
+
+13. Why we need to open Listener? Remote user - target group(fb) - facebook
+
+14. 5 ms - 5 rules in listeners
+
+15. 13 MS - 13 Target groups
+
+16. App - 95%  - Path based routing - http/https - application layer 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+elb and Autoscalling:
+---------------------
+1. elb - elastic load balancer - Health check and Distribution...Intimation about health conditions
+2. asg - autoscalling group - Scale-up and Scale-down; Configurations(desired, min, max), Conditions - cpu utilization - 50%
+3. Interface between browser and actual application - Balances the load
+   End Goal - "Customer Satisfaction"
+4. Classic LB - App and Trans osi
+   Protocols - tcp, http, https
+   support - both
+   Application - monolythic
+5. Application LB - http, https; application osi, Path, 1 to m, 95%...
+6. Network LB - TCP, UDP, TLS; Transport; Port, 1 to m, 5%
+7. Gateway LB - ip
+8. CLB: Health Check
+http(80) - 30secs interval - Home page of app - Response time(5secs) - 2 conse unhealthy threshold
+- 10 con success healthy
+9. ALB:
+   Target group : 
+   alb - only one ms 
+   Listener??? 
+10. Autoscalling - Scale-up and Scale-down
+Input =>> Base Instance and elb 
+Configuration=> Desired Capacity ; Min Capacity ; Max Capacity 
+Condition=> Metric = cpu util and target > 50%
+
+11. if(1 and 2 >50%) then
+    3
+ 
